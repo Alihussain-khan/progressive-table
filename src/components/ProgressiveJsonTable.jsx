@@ -186,7 +186,7 @@ export default function ProgressiveJsonTable({ data }) {
                     />
 
                   ) : (
-                    <div style={{ height: 34, width: 34 }} />
+                    <div style={{ height: 2, width: 34 }} />
                   )}
                 </th>
               );
@@ -219,7 +219,7 @@ export default function ProgressiveJsonTable({ data }) {
                           className="w-full outline-0 reveal"
                         />
                       ) : (
-                        <div style={{ height: 34 }} />
+                        <div style={{ height: 23 }} />
                       )}
                     </td>
                   );
