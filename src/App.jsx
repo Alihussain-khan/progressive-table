@@ -16,7 +16,7 @@ function App() {
 
 
 
-<ProgressiveJsonTable data={sample} />
+        <ProgressiveJsonTable data={sample} />
 
 
     </>

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 export default function ProgressiveJsonTable({ data }) {
-  // data = [{...}, {...}] (array of objects)
+
 
   const initialColumns = useMemo(() => {
     const keys = new Set();
@@ -173,6 +173,7 @@ export default function ProgressiveJsonTable({ data }) {
               return (
                 <th key={c} style={{ border: "1px solid #ddd", padding: 6 }}>
                   {shown ? (
+                   
                     <input
                       ref={(el) => {
                         if (!inputRefs.current[0]) inputRefs.current[0] = [];
@@ -181,18 +182,11 @@ export default function ProgressiveJsonTable({ data }) {
                       value={h}
                       onChange={(e) => onChangeHeader(c, e.target.value)}
                       onKeyDown={onKeyDown}
-                      style={{
-                        width: "100%",
-                        padding: 6,
-                        boxSizing: "border-box",
-                        fontWeight: 700,
-                        outline: active ? "2px solid #111" : "none",
-                        border: "1px solid #bbb",
-                        borderRadius: 6,
-                      }}
+                      className="outline-0 w-full text-left reveal"
                     />
+
                   ) : (
-                    <div style={{ height: 34 }} />
+                    <div style={{ height: 34, width: 34 }} />
                   )}
                 </th>
               );
@@ -222,14 +216,7 @@ export default function ProgressiveJsonTable({ data }) {
                             onChangeBodyCell(gridR, c, e.target.value)
                           }
                           onKeyDown={onKeyDown}
-                          style={{
-                            width: "100%",
-                            padding: 6,
-                            boxSizing: "border-box",
-                            outline: active ? "2px solid #111" : "none",
-                            border: "1px solid #bbb",
-                            borderRadius: 6,
-                          }}
+                          className="w-full outline-0 reveal"
                         />
                       ) : (
                         <div style={{ height: 34 }} />
