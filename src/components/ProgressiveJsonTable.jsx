@@ -9,7 +9,7 @@ export default function ProgressiveJsonTable({ data }) {
     return Array.from(keys);
   }, [data]);
 
-  // ✅ Editable headers
+ 
   const [headers, setHeaders] = useState(initialColumns);
 
   // Keep headers in sync if data changes shape (simple reset)
@@ -136,7 +136,7 @@ export default function ProgressiveJsonTable({ data }) {
     }
   };
 
-  // ✅ Edit header cell
+  // Edit header cell
   const onChangeHeader = (c, v) => {
     setHeaders((prev) => {
       const copy = prev.slice();
