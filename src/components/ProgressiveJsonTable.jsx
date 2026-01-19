@@ -250,13 +250,3 @@ export default function ProgressiveJsonTable({ data }) {
     </div>
   );
 }
-
-/** Example usage:
-const sample = [
-  { name: "Ali", city: "Stavanger", age: 25 },
-  { name: "Sara", city: "Oslo", age: 23 },
-  { name: "Jon", city: "Bergen", age: 29 },
-];
-
-<ProgressiveJsonTable data={sample} />
-*/

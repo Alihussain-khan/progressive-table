@@ -7,7 +7,7 @@ function App() {
   const [count, setCount] = useState(0)
 
     const sample = [
-  { name: "Ali", city: "Stavanger", age: 25 },
+  { name: "Jimmy", city: "Stavanger", age: 25 },
   { name: "Sara", city: "Oslo", age: 23 },
   { name: "Jon", city: "Bergen", age: 29 },
 ];
