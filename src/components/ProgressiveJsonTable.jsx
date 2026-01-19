@@ -1,15 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 export default function ProgressiveJsonTable({ data }) {
-
-
+  // Build columns from data keys + prepend U
   const initialColumns = useMemo(() => {
     const keys = new Set();
     (data || []).forEach((row) => Object.keys(row || {}).forEach((k) => keys.add(k)));
-    return Array.from(keys);
+    return ["U", ...Array.from(keys)];
   }, [data]);
 
- 
   const [headers, setHeaders] = useState(initialColumns);
 
   // Keep headers in sync if data changes shape (simple reset)
@@ -20,24 +18,33 @@ export default function ProgressiveJsonTable({ data }) {
   const rowCount = (data || []).length;
   const colCount = headers.length;
 
-  // Header row is an extra row in the grid (row 0)
+  // Header row is an extra row in the grU (row 0)
   // Body rows are 1..rowCount
   const totalRowsIncludingHeader = rowCount + 1;
   const totalCells = totalRowsIncludingHeader * colCount;
 
   // Values for body cells, indexed by body row r (0..rowCount-1)
+  // Includes U column as col 0 (1..N) and is read-only in UI
   const [values, setValues] = useState(() =>
-    (data || []).map((row) => headers.map((h, i) => String(row?.[initialColumns[i]] ?? "")))
+    (data || []).map((row, rIndex) =>
+      headers.map((h) => {
+        if (h === "U") return String(rIndex + 1);
+        return String(row?.[h] ?? "");
+      })
+    )
   );
 
-  // Re-init values when data/headers change (maps by original column key positions)
+  // Re-init values when data/headers change
   useEffect(() => {
     setValues(
-      (data || []).map((row) =>
-        headers.map((_, i) => String(row?.[initialColumns[i]] ?? ""))
+      (data || []).map((row, rIndex) =>
+        headers.map((h) => {
+          if (h === "U") return String(rIndex + 1);
+          return String(row?.[h] ?? "");
+        })
       )
     );
-  }, [data, headers, initialColumns]);
+  }, [data, headers]);
 
   // Reveal cells progressively
   const [revealedCells, setRevealedCells] = useState(totalCells > 0 ? 1 : 0);
@@ -62,6 +69,7 @@ export default function ProgressiveJsonTable({ data }) {
 
   const idx = (r, c) => r * colCount + c;
   const isRevealed = (r, c) => idx(r, c) < revealedCells;
+  const isRowRevealed = (gridR) => idx(gridR, 0) < revealedCells;
 
   const clampCursor = (r, c) => ({
     r: Math.max(0, Math.min(totalRowsIncludingHeader - 1, r)),
@@ -147,6 +155,7 @@ export default function ProgressiveJsonTable({ data }) {
 
   // Edit body cell (grid row r >= 1)
   const onChangeBodyCell = (gridR, c, v) => {
+    if (headers[c] === "U") return; // protect ID
     const bodyR = gridR - 1;
     setValues((prev) => {
       const copy = prev.map((row) => row.slice());
@@ -168,23 +177,26 @@ export default function ProgressiveJsonTable({ data }) {
           <tr>
             {headers.map((h, c) => {
               const shown = isRevealed(0, c);
-              const active = cursor.r === 0 && cursor.c === c;
+              const isIdCol = h === "U";
 
               return (
                 <th key={c} style={{ border: "1px solid #ddd", padding: 6 }}>
                   {shown ? (
-                   
                     <input
                       ref={(el) => {
                         if (!inputRefs.current[0]) inputRefs.current[0] = [];
                         inputRefs.current[0][c] = el;
                       }}
                       value={h}
-                      onChange={(e) => onChangeHeader(c, e.target.value)}
+                      readOnly={isIdCol}
+                      onChange={
+                        isIdCol ? undefined : (e) => onChangeHeader(c, e.target.value)
+                      }
                       onKeyDown={onKeyDown}
-                      className="outline-0 w-full text-left reveal"
+                      className={`outline-0 w-full text-left reveal ${
+                        isIdCol ? "opacity-70" : ""
+                      }`}
                     />
-
                   ) : (
                     <div style={{ height: 2, width: 34 }} />
                   )}
@@ -197,11 +209,15 @@ export default function ProgressiveJsonTable({ data }) {
         <tbody>
           {Array.from({ length: rowCount }).map((_, bodyR) => {
             const gridR = bodyR + 1;
+
+            // Hide rows initially; show only once reveal reaches that row
+            if (!isRowRevealed(gridR)) return null;
+
             return (
               <tr key={bodyR}>
                 {Array.from({ length: colCount }).map((__, c) => {
                   const shown = isRevealed(gridR, c);
-                  const active = cursor.r === gridR && cursor.c === c;
+                  const isIdCol = headers[c] === "U";
 
                   return (
                     <td key={c} style={{ border: "1px solid #ddd", padding: 6 }}>
@@ -212,11 +228,16 @@ export default function ProgressiveJsonTable({ data }) {
                             inputRefs.current[gridR][c] = el;
                           }}
                           value={values?.[bodyR]?.[c] ?? ""}
-                          onChange={(e) =>
-                            onChangeBodyCell(gridR, c, e.target.value)
+                          readOnly={isIdCol}
+                          onChange={
+                            isIdCol
+                              ? undefined
+                              : (e) => onChangeBodyCell(gridR, c, e.target.value)
                           }
                           onKeyDown={onKeyDown}
-                          className="w-full outline-0 reveal"
+                          className={`w-full outline-0 reveal ${
+                            isIdCol ? "opacity-70 cursor-not-allowed" : ""
+                          }`}
                         />
                       ) : (
                         <div style={{ height: 23 }} />
@@ -231,8 +252,8 @@ export default function ProgressiveJsonTable({ data }) {
       </table>
 
       <div style={{ marginTop: 10, fontSize: 13, opacity: 0.8 }}>
-        Keys: → reveal/move to next cell, ↓ reveal next row (header counts as row 1).
-        (←/↑ optional)
+        Keys: → reveal/move to next cell, ↓ reveal next row (header counts as row 1). (←/↑
+        optional)
       </div>
     </div>
   );
